@@ -1,0 +1,12 @@
+[package]
+name = "slate"
+version = "0.1.0"
+entrypoint = "lib.typ"
+authors = ["Zak Grivell<@zak-grivell>"]
+license = "MIT"
+description = "Obsidian like features."
+
+[template]
+path = "template"
+entrypoint = "main.typ"
+thumbnail = "todo.png"

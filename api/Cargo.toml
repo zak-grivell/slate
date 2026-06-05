@@ -1,0 +1,14 @@
+[package]
+name = "slate-api"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dioxus = { workspace = true, features = ["fullstack"] }
+slate-server = { path = "../server", optional=true}
+slate-shared = { path = "../shared" }
+
+[features]
+server = ["dioxus/server", "dep:slate-server"]
+default = []
+

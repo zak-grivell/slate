@@ -1,0 +1,79 @@
+@import "tailwindcss";
+@source "./src/**/*.{rs,html,css}";
+
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --color-base00: var(--base00);
+  --color-base01: var(--base01);
+  --color-base02: var(--base02);
+  --color-base03: var(--base03);
+  --color-base04: var(--base04);
+  --color-base05: var(--base05);
+  --color-base06: var(--base06);
+  --color-base07: var(--base07);
+  --color-base08: var(--base08);
+  --color-base09: var(--base09);
+  --color-base0A: var(--base0A);
+  --color-base0B: var(--base0B);
+  --color-base0C: var(--base0C);
+  --color-base0D: var(--base0D);
+  --color-base0E: var(--base0E);
+  --color-base0F: var(--base0F);
+}
+
+@layer components {
+  .prose :where(pre, code, pre code) {
+    background-color: revert !important;
+    color: revert !important;
+
+  }
+
+  .prose code::before,
+  .prose code::after {
+    content: none;
+  }
+
+  .prose {
+    --tw-prose-headings: var(--base0E) !important;
+    --tw-prose-bold: var(--base09) !important;
+    --tw-prose-quotes: var(--base0C) !important;
+    --tw-prose-links: var(--base0C) !important;
+  }
+
+  .prose :where(h1):not(:where(.not-prose, .not-prose *)) {
+    color: var(--base0A) !important;
+  }
+
+  .prose :where(h2):not(:where(.not-prose, .not-prose *)) {
+    color: var(--base0B) !important;
+  }
+
+  .prose :where(h3):not(:where(.not-prose, .not-prose *)) {
+    color: var(--base0C) !important;
+  }
+
+  .prose :where(h4):not(:where(.not-prose, .not-prose *)) {
+    color: var(--base0D) !important;
+  }
+
+  .prose :where(h5, h6):not(:where(.not-prose, .not-prose *)) {
+    color: var(--base0E) !important;
+  }
+
+  .prose :where(em):not(:where(.not-prose, .not-prose *)) {
+    color: var(--base0D) !important;
+  }
+
+  .prose :where(strong):not(:where(.not-prose, .not-prose *)) {
+    color: var(--base09) !important;
+  }
+
+  .prose :where(blockquote):not(:where(.not-prose, .not-prose *)) {
+    color: var(--base0C) !important;
+  }
+
+  .prose :where(a):not(:where(.not-prose, .not-prose *)) {
+    color: var(--base0C) !important;
+  }
+}

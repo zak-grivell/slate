@@ -1,0 +1,14 @@
+[package]
+name = "slate-app"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dioxus = { workspace = true, features = ["fullstack"] }
+slate-client = { path = "../client"}
+slate-server = { path = "../server", optional=true}
+
+[features]
+server = ["dioxus/server", "slate-client/server", "dep:slate-server"]
+web = ["dioxus/web", "slate-client/web"]
+default = ["server", "web"]
