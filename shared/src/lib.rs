@@ -81,6 +81,7 @@ impl FromRouteSegments for TypstFilePath {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum ServerEvent {
     FileUpdate(ServerFnResult<String>),
+    FileFocused(TypstFilePath),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

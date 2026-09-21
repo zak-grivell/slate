@@ -8,8 +8,22 @@ use futures::{SinkExt, StreamExt, stream::FuturesUnordered};
 use notify::{EventKind, RecursiveMode, Watcher};
 use slate_bridge::TypstBridge;
 use slate_shared::{ClientEvent, ServerEvent, TypstFileMetaData, TypstFilePath};
-use std::{path::PathBuf, sync::Arc};
-use tokio::sync::{Mutex, mpsc};
+use std::{
+    path::PathBuf,
+    sync::{Arc, OnceLock},
+};
+use tokio::sync::{Mutex, mpsc, watch};
+
+static FOCUSED_FILE: OnceLock<watch::Sender<Option<TypstFilePath>>> = OnceLock::new();
+
+fn focused_file() -> &'static watch::Sender<Option<TypstFilePath>> {
+    FOCUSED_FILE.get_or_init(|| watch::channel(None).0)
+}
+
+pub async fn focus_file(axum::Json(path): axum::Json<TypstFilePath>) -> axum::http::StatusCode {
+    focused_file().send_replace(Some(path));
+    axum::http::StatusCode::NO_CONTENT
+}
 
 static TYPST_BRIDGE: Lazy<Mutex<TypstBridge>> = Lazy::new(async move || {
     println!("getting the bridge");
@@ -124,6 +138,7 @@ pub async fn file_watcher(
     Ok(options.on_upgrade(move |socket| async move {
         let (tx, mut rx) = mpsc::channel::<PathBuf>(5);
         let (mut sender, mut reciver) = socket.split();
+        let mut focus_rx = focused_file().subscribe();
 
         let watcher_tx = tx.clone();
 
@@ -142,12 +157,21 @@ pub async fn file_watcher(
         })
         .unwrap();
 
-        sender
+        if sender
             .send(ServerEvent::FileUpdate(
                 render(path.as_local().to_path_buf()).await,
             ))
             .await
-            .unwrap();
+            .is_err()
+        {
+            return;
+        }
+
+        if let Some(path) = focus_rx.borrow().clone() {
+            if sender.send(ServerEvent::FileFocused(path)).await.is_err() {
+                return;
+            }
+        }
 
         watcher
             .watch(path.as_local(), RecursiveMode::NonRecursive)
@@ -157,14 +181,33 @@ pub async fn file_watcher(
         let last_path = path.clone();
 
         let worker = tokio::spawn(async move {
-            while rx.recv().await.is_some() {
-                println!("change detected - re rendering");
-                sender
-                    .send(ServerEvent::FileUpdate(
-                        render(path.lock().await.as_local().to_path_buf()).await,
-                    ))
-                    .await
-                    .unwrap();
+            loop {
+                tokio::select! {
+                    changed_path = rx.recv() => {
+                        let Some(_) = changed_path else { break };
+                        println!("change detected - re rendering");
+                        if sender
+                            .send(ServerEvent::FileUpdate(
+                                render(path.lock().await.as_local().to_path_buf()).await,
+                            ))
+                            .await
+                            .is_err()
+                        {
+                            break;
+                        }
+                    }
+                    changed = focus_rx.changed() => {
+                        if changed.is_err() {
+                            break;
+                        }
+                        let focused = focus_rx.borrow_and_update().clone();
+                        if let Some(focused) = focused
+                            && sender.send(ServerEvent::FileFocused(focused)).await.is_err()
+                        {
+                            break;
+                        }
+                    }
+                }
             }
         });
 

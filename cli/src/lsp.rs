@@ -6,13 +6,24 @@ use std::{
     process::Stdio,
 };
 use tokio::{
-    io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, BufReader, BufWriter},
+    io::{
+        AsyncBufReadExt, AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, BufReader, BufWriter,
+    },
+    net::TcpStream,
     process::{Child, Command},
     sync::mpsc,
+    time::{Duration, timeout},
 };
 use url::Url;
 
 use crate::spawn_preview;
+
+struct Preview {
+    child: Child,
+    port: u16,
+    root: PathBuf,
+    focused: Option<PathBuf>,
+}
 
 pub async fn run(port: u16, open: bool) -> io::Result<()> {
     let mut tinymist = Command::new("tinymist")
@@ -37,7 +48,7 @@ pub async fn run(port: u16, open: bool) -> io::Result<()> {
     tokio::spawn(read_messages(BufReader::new(tokio::io::stdin()), editor_tx));
     tokio::spawn(read_messages(BufReader::new(tinymist_stdout), tinymist_tx));
     let mut documents = HashMap::<String, String>::new();
-    let mut preview: Option<Child> = None;
+    let mut preview: Option<Preview> = None;
 
     loop {
         tokio::select! {
@@ -51,13 +62,29 @@ pub async fn run(port: u16, open: bool) -> io::Result<()> {
 
                 if preview.is_none() && value.get("method").and_then(Value::as_str) == Some("initialize") {
                     if let Some(root) = workspace_root(&value) {
-                        preview = match spawn_preview(&root, port, open) {
-                            Ok(child) => Some(child),
+                        preview = match start_preview(&root, port, open).await {
+                            Ok((child, port)) => Some(Preview {
+                                child,
+                                port,
+                                root,
+                                focused: None,
+                            }),
                             Err(err) => {
                                 eprintln!("slate lsp: failed to start preview: {err}");
                                 None
                             }
                         };
+                    }
+                }
+
+                if let Some(preview) = preview.as_mut()
+                    && let Some(path) = message_document_path(&value, &preview.root)
+                    && preview.focused.as_ref() != Some(&path)
+                {
+                    if let Err(err) = notify_preview_focus(preview.port, &path).await {
+                        eprintln!("slate lsp: failed to focus preview: {err}");
+                    } else {
+                        preview.focused = Some(path);
                     }
                 }
 
@@ -81,11 +108,62 @@ pub async fn run(port: u16, open: bool) -> io::Result<()> {
         }
     }
 
-    if let Some(mut child) = preview {
-        let _ = child.kill().await;
+    if let Some(mut preview) = preview {
+        let _ = preview.child.kill().await;
     }
     let _ = tinymist.kill().await;
     Ok(())
+}
+
+async fn start_preview(root: &Path, port: u16, open: bool) -> io::Result<(Child, u16)> {
+    let mut child = spawn_preview(root, port, open)?;
+    let stdout = child
+        .stdout
+        .take()
+        .ok_or_else(|| io::Error::other("missing preview port output"))?;
+    let mut stdout = BufReader::new(stdout);
+    let mut line = String::new();
+    timeout(Duration::from_secs(5), stdout.read_line(&mut line))
+        .await
+        .map_err(|_| io::Error::new(io::ErrorKind::TimedOut, "preview startup timed out"))??;
+    let port = line
+        .trim()
+        .parse()
+        .map_err(|err| io::Error::new(io::ErrorKind::InvalidData, err))?;
+    tokio::spawn(async move {
+        let _ = tokio::io::copy(&mut stdout, &mut tokio::io::sink()).await;
+    });
+    Ok((child, port))
+}
+
+fn message_document_path(message: &Value, root: &Path) -> Option<PathBuf> {
+    if message.get("method").and_then(Value::as_str) == Some("textDocument/didClose") {
+        return None;
+    }
+    let uri = message
+        .pointer("/params/textDocument/uri")
+        .and_then(Value::as_str)?;
+    let path = Url::parse(uri).ok()?.to_file_path().ok()?;
+    if path.extension().and_then(|extension| extension.to_str()) != Some("typ") {
+        return None;
+    }
+    path.strip_prefix(root).ok().map(Path::to_path_buf)
+}
+
+async fn notify_preview_focus(port: u16, path: &Path) -> io::Result<()> {
+    let body = serde_json::to_vec(&path.to_string_lossy()).map_err(io::Error::other)?;
+    let mut stream = TcpStream::connect(("127.0.0.1", port)).await?;
+    stream
+        .write_all(
+            format!(
+                "POST /_slate/focus HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+                body.len()
+            )
+            .as_bytes(),
+        )
+        .await?;
+    stream.write_all(&body).await?;
+    stream.shutdown().await
 }
 
 async fn read_messages<R: AsyncRead + Unpin>(
@@ -351,5 +429,36 @@ mod tests {
             position_offset(text, &json!({"line": 1, "character": 2})),
             Some(9)
         );
+    }
+
+    #[test]
+    fn finds_workspace_document_path() {
+        let message = json!({
+            "method": "textDocument/documentColor",
+            "params": {
+                "textDocument": {
+                    "uri": "file:///notes/sub/example.typ"
+                }
+            }
+        });
+
+        assert_eq!(
+            message_document_path(&message, Path::new("/notes")),
+            Some(PathBuf::from("sub/example.typ"))
+        );
+    }
+
+    #[test]
+    fn closing_document_does_not_focus_it() {
+        let message = json!({
+            "method": "textDocument/didClose",
+            "params": {
+                "textDocument": {
+                    "uri": "file:///notes/closed.typ"
+                }
+            }
+        });
+
+        assert_eq!(message_document_path(&message, Path::new("/notes")), None);
     }
 }

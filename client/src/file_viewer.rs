@@ -8,6 +8,7 @@ use slate_shared::{ClientEvent, ServerEvent, TypstFilePath};
 #[component]
 fn RenderedDoccument(path: TypstFilePath) -> Element {
     let initial_path = path.clone();
+    let navigator = use_navigator();
     let mut socket =
         use_websocket(move || file_watcher(initial_path.clone(), WebSocketOptions::new()));
 
@@ -26,6 +27,9 @@ fn RenderedDoccument(path: TypstFilePath) -> Element {
         while let Ok(msg) = socket.recv().await {
             match msg {
                 ServerEvent::FileUpdate(res) => content.set(res),
+                ServerEvent::FileFocused(path) => {
+                    navigator.replace(crate::AppRoute::FileViewer { path });
+                }
             }
         }
     });

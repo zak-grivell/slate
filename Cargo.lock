@@ -4559,6 +4559,7 @@ dependencies = [
  "serde_json",
  "slate-bridge",
  "slate-client",
+ "slate-server",
  "tokio",
  "url",
 ]

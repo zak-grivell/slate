@@ -1,7 +1,18 @@
 use dioxus::prelude::*;
 use slate_api::get_colors;
 
-fn get_colors_css(colors: Vec<String>) -> String {
+const DEFAULT_COLORS: [&str; 16] = [
+    "#303446", "#292c3c", "#414559", "#51576d", "#626880", "#c6d0f5", "#f2d5cf", "#babbf1",
+    "#e78284", "#ef9f76", "#e5c890", "#a6d189", "#81c8be", "#8caaee", "#ca9ee6", "#eebebe",
+];
+
+fn get_colors_css(colors: &[String]) -> String {
+    let colors: Vec<&str> = if colors.len() >= 16 {
+        colors.iter().take(16).map(String::as_str).collect()
+    } else {
+        DEFAULT_COLORS.to_vec()
+    };
+
     format!(
         "
     html, body {{
@@ -54,7 +65,7 @@ pub fn Base16Theme() -> Element {
         .read()
         .as_ref()
         .and_then(|res| res.as_ref().ok())
-        .map(|v| get_colors_css(v.to_vec()));
+        .map(|v| get_colors_css(v));
 
     rsx! {
         document::Stylesheet { href: "/assets/tailwind.css" }
@@ -70,5 +81,18 @@ pub fn Base16Theme() -> Element {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn empty_theme_metadata_uses_default_colors() {
+        let css = get_colors_css(&[]);
+
+        assert!(css.contains("--base00: #303446"));
+        assert!(css.contains("--base0F: #eebebe"));
     }
 }

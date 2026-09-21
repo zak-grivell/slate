@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
 use slate_client::App;
 use std::{
+    io::Write,
     net::SocketAddr,
     path::{Path, PathBuf},
     process::Stdio,
@@ -34,6 +35,8 @@ enum Commands {
         no_open: bool,
         #[arg(long, hide = true)]
         parent_pid: Option<u32>,
+        #[arg(long, hide = true)]
+        announce_port: bool,
     },
     /// Run an LSP proxy around Tinymist with Slate link navigation.
     Lsp {
@@ -56,7 +59,8 @@ async fn main() {
             port,
             no_open,
             parent_pid,
-        } => run_preview(path, port, !no_open, parent_pid).await,
+            announce_port,
+        } => run_preview(path, port, !no_open, parent_pid, announce_port).await,
         Commands::Lsp { port, no_open } => {
             if let Err(err) = lsp::run(port, !no_open).await {
                 eprintln!("slate lsp: {err}");
@@ -69,7 +73,13 @@ async fn main() {
     }
 }
 
-async fn run_preview(path: PathBuf, port: u16, open: bool, parent_pid: Option<u32>) {
+async fn run_preview(
+    path: PathBuf,
+    port: u16,
+    open: bool,
+    parent_pid: Option<u32>,
+    announce_port: bool,
+) {
     let (root, initial_file) = preview_paths(&path);
     if let Err(err) = std::env::set_current_dir(&root) {
         eprintln!("slate preview: could not enter {}: {err}", root.display());
@@ -88,6 +98,10 @@ async fn run_preview(path: PathBuf, port: u16, open: bool, parent_pid: Option<u3
         .local_addr()
         .expect("bound preview listener should have a local address")
         .port();
+    if announce_port {
+        println!("{port}");
+        let _ = std::io::stdout().flush();
+    }
     let url = preview_url(port, &initial_file);
     eprintln!("Slate preview: {url}");
 
@@ -101,7 +115,10 @@ async fn run_preview(path: PathBuf, port: u16, open: bool, parent_pid: Option<u3
         });
     }
 
-    let router = dioxus::server::router(App);
+    let router = dioxus::server::router(App).route(
+        "/_slate/focus",
+        axum::routing::post(slate_server::focus_file),
+    );
     let server = axum::serve(listener, router);
     if let Some(parent_pid) = parent_pid {
         tokio::select! {
@@ -202,14 +219,15 @@ pub(crate) fn spawn_preview(root: &Path, port: u16, open: bool) -> std::io::Resu
         .arg("--port")
         .arg(port.to_string())
         .arg("--parent-pid")
-        .arg(std::process::id().to_string());
+        .arg(std::process::id().to_string())
+        .arg("--announce-port");
     if !open {
         command.arg("--no-open");
     }
     command
         .current_dir(root)
         .stdin(Stdio::null())
-        .stdout(Stdio::null())
+        .stdout(Stdio::piped())
         .stderr(Stdio::inherit())
         .kill_on_drop(true)
         .spawn()
