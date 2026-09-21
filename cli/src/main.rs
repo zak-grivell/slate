@@ -27,14 +27,18 @@ enum Commands {
     Preview {
         #[arg(default_value = ".")]
         path: PathBuf,
-        #[arg(long, default_value_t = 3000)]
+        /// Port to listen on. Use 0 to let the OS choose an available port.
+        #[arg(long, default_value_t = 0)]
         port: u16,
         #[arg(long)]
         no_open: bool,
+        #[arg(long, hide = true)]
+        parent_pid: Option<u32>,
     },
     /// Run an LSP proxy around Tinymist with Slate link navigation.
     Lsp {
-        #[arg(long, default_value_t = 3000)]
+        /// Preview port. Use 0 to let the OS choose an available port.
+        #[arg(long, default_value_t = 0)]
         port: u16,
         #[arg(long)]
         no_open: bool,
@@ -51,7 +55,8 @@ async fn main() {
             path,
             port,
             no_open,
-        } => run_preview(path, port, !no_open).await,
+            parent_pid,
+        } => run_preview(path, port, !no_open, parent_pid).await,
         Commands::Lsp { port, no_open } => {
             if let Err(err) = lsp::run(port, !no_open).await {
                 eprintln!("slate lsp: {err}");
@@ -64,7 +69,7 @@ async fn main() {
     }
 }
 
-async fn run_preview(path: PathBuf, port: u16, open: bool) {
+async fn run_preview(path: PathBuf, port: u16, open: bool, parent_pid: Option<u32>) {
     let (root, initial_file) = preview_paths(&path);
     if let Err(err) = std::env::set_current_dir(&root) {
         eprintln!("slate preview: could not enter {}: {err}", root.display());
@@ -79,6 +84,10 @@ async fn run_preview(path: PathBuf, port: u16, open: bool) {
             std::process::exit(1);
         }
     };
+    let port = listener
+        .local_addr()
+        .expect("bound preview listener should have a local address")
+        .port();
     let url = preview_url(port, &initial_file);
     eprintln!("Slate preview: {url}");
 
@@ -93,10 +102,38 @@ async fn run_preview(path: PathBuf, port: u16, open: bool) {
     }
 
     let router = dioxus::server::router(App);
-    if let Err(err) = axum::serve(listener, router).await {
+    let server = axum::serve(listener, router);
+    if let Some(parent_pid) = parent_pid {
+        tokio::select! {
+            result = server => {
+                if let Err(err) = result {
+                    eprintln!("slate preview server stopped: {err}");
+                    std::process::exit(1);
+                }
+            }
+            _ = wait_for_parent_exit(parent_pid) => {}
+        }
+    } else if let Err(err) = server.await {
         eprintln!("slate preview server stopped: {err}");
         std::process::exit(1);
     }
+}
+
+#[cfg(unix)]
+async fn wait_for_parent_exit(parent_pid: u32) {
+    loop {
+        // Signal 0 only checks whether the process exists; it does not send a signal.
+        let alive = unsafe { libc::kill(parent_pid as libc::pid_t, 0) == 0 };
+        if !alive {
+            return;
+        }
+        sleep(Duration::from_millis(500)).await;
+    }
+}
+
+#[cfg(not(unix))]
+async fn wait_for_parent_exit(_parent_pid: u32) {
+    std::future::pending::<()>().await;
 }
 
 fn preview_paths(path: &Path) -> (PathBuf, PathBuf) {
@@ -163,7 +200,9 @@ pub(crate) fn spawn_preview(root: &Path, port: u16, open: bool) -> std::io::Resu
         .arg("preview")
         .arg(root)
         .arg("--port")
-        .arg(port.to_string());
+        .arg(port.to_string())
+        .arg("--parent-pid")
+        .arg(std::process::id().to_string());
     if !open {
         command.arg("--no-open");
     }
@@ -172,5 +211,6 @@ pub(crate) fn spawn_preview(root: &Path, port: u16, open: bool) -> std::io::Resu
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::inherit())
+        .kill_on_drop(true)
         .spawn()
 }

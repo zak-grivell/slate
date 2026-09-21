@@ -19,6 +19,7 @@ pub async fn run(port: u16, open: bool) -> io::Result<()> {
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::inherit())
+        .kill_on_drop(true)
         .spawn()?;
     let tinymist_stdin = tinymist
         .stdin
@@ -68,6 +69,9 @@ pub async fn run(port: u16, open: bool) -> io::Result<()> {
                 }
 
                 write_message(&mut tinymist_in, &message).await?;
+                if value.get("method").and_then(Value::as_str) == Some("exit") {
+                    break;
+                }
             }
             server_message = tinymist_rx.recv() => {
                 let Some(message) = server_message else { break };
