@@ -1,5 +1,7 @@
 #import "vault.typ":*
 #show: setup
+#import fletcher:*
+
 #tag("oose")
 
 = Decorator

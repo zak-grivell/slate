@@ -14,8 +14,6 @@
 
 #flashcard("Is Django the client, the middle wear or the database", "Middlewear")
 
-#image("../djangointernal.png")
-
 #flashcard("Describe the internal flow of django", "#image(\"../djangointernal.png\")")
 
 #flashcard("What is load balancing", "Distibuting requests between servers")

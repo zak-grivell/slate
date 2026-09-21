@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>Decorator</h2>
+    <p>Pattern that allows dynamic layering of objects to add responsibilities without modifying the original component.</p>
+    <p><span style="display: inline-block"></span></p>
+    <p>A component implements the Component interface with the methods available, whereas a decorator wraps another component which can be either a concrete component or another decorator.</p>
+    <h2>Inheritance vs Composition</h2>
+    <p>But does decorator break the prefer composition over inheritance principle? No, because the decorator is using composition to hold a reference to the component it is decorating, rather than inheriting from it. The decorator can be seen as a wrapper around the component, allowing for additional functionality to be added without modifying the original component.</p>
+  </body>
+</html>

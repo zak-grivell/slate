@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>State Pattern</h2>
+    <p>Pattern where a client class holds onto a <code>State</code> interface which it can call methods on. Multiple <code>ConcreteState</code>s will then inherit from <code>State</code> in which the <code>Concrete</code> itself controls what the next state is.</p>
+    <p><span style="display: inline-block"></span></p>
+    <pre><code data-lang="java"><span style="color: #8839ef">class</span> <span style="color: #df8e1d">Client</span> {<br>  <span style="color: #179299">State</span> state;<br><br>  <span style="color: #8839ef">void</span> <span style="color: #1e66f5">next</span>() {<br>    state.<span style="color: #d20f39">next</span>(<span style="color: #d20f39">this</span>);<br>  }<br><br>  <span style="color: #8839ef">void</span> <span style="color: #1e66f5">set</span>(<span style="color: #179299">State</span> <span style="color: #d20f39">state</span>) {<br>    <span style="color: #d20f39">this</span>.state = state;<br>  }<br>}<br><br><span style="color: #8839ef">interface</span> <span style="color: #df8e1d">State</span> {<br>  <span style="color: #179299">T</span> <span style="color: #1e66f5">method</span>(<span style="color: #179299">U</span> <span style="color: #d20f39">u</span>);<br><br>  <span style="color: #8839ef">void</span> <span style="color: #1e66f5">next</span>(<span style="color: #179299">Client</span> <span style="color: #d20f39">client</span>);<br>}<br><br><span style="color: #8839ef">class</span> <span style="color: #df8e1d">ConcreteState</span> <span style="color: #8839ef">implements</span> State {<br>  <span style="color: #179299">T</span> <span style="color: #1e66f5">method</span>(<span style="color: #179299">U</span> <span style="color: #d20f39">u</span>) { ... }<br><br>  <span style="color: #8839ef">void</span> <span style="color: #1e66f5">next</span>(<span style="color: #179299">Client</span> <span style="color: #d20f39">client</span>) { ... }<br>}<br></code></pre>
+  </body>
+</html>

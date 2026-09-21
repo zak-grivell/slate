@@ -2,6 +2,8 @@
 #show: setup
 #tag("oose")
 
+#import fletcher:*
+
 = Composite Pattern
 Used to represent a tree like structure in code
 

@@ -10,7 +10,7 @@ mod theme;
 
 use file_viewer::FileViewer;
 use messages::use_messenger;
-use slate_shared::RoutePath;
+use slate_shared::TypstFilePath;
 
 #[component]
 fn KeyboardShortcutManager(children: Element) -> Element {
@@ -30,17 +30,16 @@ fn KeyboardShortcutManager(children: Element) -> Element {
 #[derive(Clone, Debug, PartialEq, Routable)]
 pub enum AppRoute {
     #[redirect("/", || AppRoute::FileViewer {
-        path: RoutePath::from(PathBuf::from("vault.typ")),
+        path: TypstFilePath::from(PathBuf::from("vault.typ")),
     })]
     #[route("/file/:..path")]
-    FileViewer { path: RoutePath },
+    FileViewer { path: TypstFilePath },
 }
 
 #[component]
 pub fn App() -> Element {
     rsx! {
-        KeyboardShortcutManager {
-            Router<AppRoute> {}
-        }
+        KeyboardShortcutManager { Router::<AppRoute> {
+        } }
     }
 }

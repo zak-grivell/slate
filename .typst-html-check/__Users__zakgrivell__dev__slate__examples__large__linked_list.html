@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>Linked Lists</h2>
+    <p>A data structure where each node has a key (value) and a <code>next</code> link to the next item in a list.</p>
+    <h3>Variations</h3>
+    <p>Head pointer</p>
+    <ul>
+      <li>so the first pointer can be switched out easier</li>
+      <li>have a pointer to a box storing the head not the actual location of the first node</li>
+    </ul>
+    <p>Doubly linked list</p>
+    <ul>
+      <li>if you want to traverse backward</li>
+      <li>have a previous and a next pointer on each node</li>
+    </ul>
+    <p>Circular linked list with a sentinel</p>
+    <ul>
+      <li>Head and tail operations can be annoying</li>
+      <li>have a null node between head and tail and point head to the null node</li>
+      <li>means you do not have to special-case the head</li>
+    </ul>
+    <h3>Operations</h3>
+    <p>All done on circular doubly linked list with a sentinel</p>
+    <pre><code data-lang="py"><span style="color: #8839ef">def</span> <span style="color: #1e66f5">insert_after</span>(<span style="color: #d20f39">node</span>, <span style="color: #d20f39">new</span>):<br>  node.next.prev = new<br>  node.next = new<br><br><span style="color: #8839ef">def</span> <span style="color: #1e66f5">delete</span>(<span style="color: #d20f39">node</span>):<br>  node.prev.next = node.next<br>  node.next.prev = node.prev<br><br><span style="color: #8839ef">def</span> <span style="color: #1e66f5">search</span>(<span style="color: #d20f39">node</span>, <span style="color: #d20f39">value</span>):<br>  <span style="color: #8839ef">if</span> not node:<br>    <span style="color: #8839ef">return</span> <span style="color: #fe640b">None</span><br><br>  <span style="color: #8839ef">if</span> node.key == value:<br>    <span style="color: #8839ef">return</span> node<br><br>  <span style="color: #8839ef">return</span> <span style="color: #d20f39">search</span>(<span style="color: #1e66f5">node</span>.<span style="color: #1e66f5">next</span>)<br></code></pre>
+  </body>
+</html>

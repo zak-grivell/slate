@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>DP</h2>
+    <p>A way of dividing input by splitting it into sub-problems and memoizing or tabulating those sub-problems to form a whole solution.</p>
+    <p>Focuses on using <strong>overlapping sub-problems</strong> and <strong>optimal substructure</strong>.</p>
+    <h3>Top down</h3>
+    <p>Uses memoization and caches the results of reused function calls to speed up repeated work.</p>
+    <pre><code data-lang="python">cache = {}<br><span style="color: #8839ef">def</span> <span style="color: #1e66f5">fib</span>(<span style="color: #d20f39">n</span>):<br>  <span style="color: #8839ef">if</span> n &lt;= <span style="color: #fe640b">1</span>:<br>    <span style="color: #8839ef">return</span> <span style="color: #fe640b">1</span><br><br>  <span style="color: #8839ef">if</span> n not in cache:<br>    cache[n] = <span style="color: #d20f39">fib</span>(<span style="color: #1e66f5">n</span>-<span style="color: #fe640b">1</span>) + <span style="color: #d20f39">fib</span>(<span style="color: #1e66f5">n</span>-<span style="color: #fe640b">2</span>)<br><br>  <span style="color: #8839ef">return</span> cache[n]</code></pre>
+    <p>So it starts at the top but remembers sub-problems.</p>
+    <h3>Bottom Up</h3>
+    <p>Uses tabulation to start with the small sub-problems and work up.</p>
+    <pre><code data-lang="python"><span style="color: #8839ef">def</span> <span style="color: #1e66f5">fib</span>(<span style="color: #d20f39">n</span>):<br>  table = [<span style="color: #fe640b">0</span>] * (n + <span style="color: #fe640b">1</span>)<br>  table[<span style="color: #fe640b">0</span>] = <span style="color: #fe640b">1</span><br>  table[<span style="color: #fe640b">1</span>] = <span style="color: #fe640b">1</span><br><br>  <span style="color: #8839ef">for</span> i <span style="color: #8839ef">in</span> <span style="color: #179299">range</span>(<span style="color: #fe640b">2</span>,<span style="color: #1e66f5"> </span><span style="color: #1e66f5">n</span>+<span style="color: #fe640b">1</span>):<br>    table[i] = table[i-<span style="color: #fe640b">1</span>] + table[i-<span style="color: #fe640b">2</span>]<br><br>  <span style="color: #8839ef">return</span> table[n]</code></pre>
+  </body>
+</html>

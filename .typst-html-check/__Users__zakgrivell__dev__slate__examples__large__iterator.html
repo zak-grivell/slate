@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>Iterator</h2>
+    <p>Used to loop over elements in a collection without caring about its internal structure.</p>
+    <p><span style="display: inline-block"></span></p>
+    <pre><code data-lang="java"><span style="color: #8839ef">interface</span> <span style="color: #df8e1d">Iterator</span> {<br>  <span style="color: #8839ef">boolean</span> <span style="color: #1e66f5">hasNext</span>();<br>  <span style="color: #179299">Item</span> <span style="color: #1e66f5">next</span>();<br>}<br><br><span style="color: #8839ef">class</span> <span style="color: #df8e1d">ConcreteIterator</span> <span style="color: #8839ef">implements</span> Iterator {<br>  <span style="color: #8839ef">boolean</span> <span style="color: #1e66f5">hasNext</span>() { ... }<br>  <span style="color: #179299">Item</span> <span style="color: #1e66f5">next</span>() {}<br>}</code></pre>
+  </body>
+</html>

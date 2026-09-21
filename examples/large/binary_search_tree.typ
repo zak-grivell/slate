@@ -3,7 +3,7 @@
 #tag("ads")
 
 = Binary Search Tree
-An ordered #note("./trees.typ", name: [Binary Tree]) where the left nodes are less than the key and the right nodes are greater.
+An ordered #note("./trees.typ") where the left nodes are less than the key and the right nodes are greater.
 
 = Finding Operations
 

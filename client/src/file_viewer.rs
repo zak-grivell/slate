@@ -3,21 +3,27 @@ use crate::theme::Base16Theme;
 use dioxus::fullstack::{WebSocketOptions, use_websocket};
 use dioxus::prelude::*;
 use slate_api::file_watcher;
-use slate_shared::{RoutePath, ServerEvent};
+use slate_shared::{ClientEvent, ServerEvent, TypstFilePath};
 
 #[component]
-fn RenderedDoccument(inital_path: RoutePath) -> Element {
-    let mut socket = use_websocket(move || {
-        println!("staring ws");
-        file_watcher(inital_path.clone(), WebSocketOptions::new())
-    });
+fn RenderedDoccument(path: TypstFilePath) -> Element {
+    let initial_path = path.clone();
+    let mut socket =
+        use_websocket(move || file_watcher(initial_path.clone(), WebSocketOptions::new()));
 
     let mut content: Signal<ServerFnResult<String>> =
         use_signal(|| Ok(String::from("<h2>Loading</h2>")));
 
+    use_effect(use_reactive((&path,), move |(path,)| {
+        spawn(async move {
+            if let Err(err) = socket.send(ClientEvent::FileMoved(path)).await {
+                eprintln!("failed to notify server of route change: {err}");
+            }
+        });
+    }));
+
     use_future(move || async move {
         while let Ok(msg) = socket.recv().await {
-            println!("Message recived {:?}", msg);
             match msg {
                 ServerEvent::FileUpdate(res) => content.set(res),
             }
@@ -27,11 +33,8 @@ fn RenderedDoccument(inital_path: RoutePath) -> Element {
     rsx! {
         match &*content.read() {
             Ok(html) => rsx! {
-                div {
-                    dangerous_inner_html: "{html}"
-                }
+                div { dangerous_inner_html: "{html}" }
             },
-
             Err(err) => rsx! {
                 div {
                     h2 { class: "font-bold", "Error rendering document" }
@@ -43,7 +46,7 @@ fn RenderedDoccument(inital_path: RoutePath) -> Element {
 }
 
 #[component]
-pub fn FileViewer(path: RoutePath) -> Element {
+pub fn FileViewer(path: TypstFilePath) -> Element {
     rsx! {
         Picker {}
         Base16Theme {}
@@ -53,8 +56,7 @@ pub fn FileViewer(path: RoutePath) -> Element {
             background_image: "radial-gradient(var(--base03) 1px, transparent 1px)",
             background_size: "22px 22px",
 
-            div {
-                class: "
+            div { class: "
                     overflow-y-auto
                     h-full
                 ",
@@ -73,9 +75,7 @@ pub fn FileViewer(path: RoutePath) -> Element {
                         shadow-xl
                         rounded-none min-[42rem]:rounded-2xl
                     ",
-                    RenderedDoccument {
-                        inital_path: path
-                    }
+                    RenderedDoccument { path }
                 }
             }
         }

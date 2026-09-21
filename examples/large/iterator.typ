@@ -2,6 +2,8 @@
 #show: setup
 #tag("oose")
 
+#import fletcher:*
+
 = Iterator
 Used to loop over elements in a collection without caring about its internal structure.
 

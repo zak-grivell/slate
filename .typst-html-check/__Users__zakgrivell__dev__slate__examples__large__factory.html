@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>Factory Pattern</h2>
+    <p>Used to abstract the complexity of constructing a complex class away from the consumer</p>
+    <pre><code data-lang="java"><span style="color: #8839ef">class</span> <span style="color: #df8e1d">Subject</span> {<br>  ...<br>}<br><br><span style="color: #8839ef">class</span> <span style="color: #df8e1d">SubjectFactory</span> {<br>  <span style="color: #8839ef">public</span> <span style="color: #8839ef">static</span> <span style="color: #179299">Subject</span> <span style="color: #1e66f5">newSubject</span>(...) {<br>    <em><span style="color: #bcc0cc">//</span></em><em><span style="color: #bcc0cc"> logic</span></em><br>    <span style="color: #8839ef">return</span> <span style="color: #8839ef">new</span> <span style="color: #179299">Subject</span>();<br>  }<br>}</code></pre>
+  </body>
+</html>

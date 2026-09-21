@@ -2,6 +2,8 @@
 #show: setup
 #tag("oose")
 
+#import fletcher:*
+
 = Singleton Pattern
 Used to only have one instance of a class
 

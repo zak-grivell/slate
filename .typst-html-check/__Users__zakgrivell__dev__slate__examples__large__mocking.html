@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>Mocking</h2>
+    <p>Mocking is a way to isolate automated tests. For example, you may not want an external API to be called every time tests run, so you replace it with a fake object and controlled return values.</p>
+    <p>In <code>Java</code> this is often done with Mockito:</p>
+    <pre><code data-lang="java"><span style="color: #8839ef">import</span> <span style="color: #8839ef">static</span> <span style="color: #179299">org</span>.<span style="color: #179299">mockito</span>.<span style="color: #179299">Mockito</span>.*;<br><br><span style="color: #179299">ExampleClass</span> mockClass = <span style="color: #d20f39">mock</span>(<span style="color: #179299">ExampleClass</span>.<span style="color: #d20f39">class</span>);<br><br><span style="color: #d20f39">when</span>(<span style="color: #1e66f5">mockClass</span>.<span style="color: #d20f39">method</span>(<span style="color: #40a02b">"</span><span style="color: #40a02b">an arg</span><span style="color: #40a02b">"</span>)).<span style="color: #d20f39">thenReturn</span>(<span style="color: #40a02b">"</span><span style="color: #40a02b">Some Return Value</span><span style="color: #40a02b">"</span>);<br><span style="color: #d20f39">when</span>(<span style="color: #1e66f5">mockClass</span>.<span style="color: #d20f39">method</span>(<span style="color: #40a02b">"</span><span style="color: #40a02b">an arg</span><span style="color: #40a02b">"</span>)).<span style="color: #d20f39">thenThrow</span>(<span style="color: #8839ef">new</span><span style="color: #1e66f5"> </span><span style="color: #179299">RuntimeException</span>(<span style="color: #40a02b">"</span><span style="color: #40a02b">Err</span><span style="color: #40a02b">"</span>));</code></pre>
+    <p>If a mocked method is called multiple times, pass multiple values to <code>thenReturn</code>.</p>
+  </body>
+</html>

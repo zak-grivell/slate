@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>Adapter Pattern</h2>
+    <p>Used to allow two systems to interface with each other despite different interfaces.</p>
+    <p><span style="display: inline-block"></span></p>
+    <pre><code data-lang="java"><span style="color: #8839ef">interface</span> <span style="color: #df8e1d">Target</span> {<br>  <span style="color: #179299">T</span> <span style="color: #1e66f5">method</span>(<span style="color: #179299">U</span> <span style="color: #d20f39">u</span>);<br>}<br><br><span style="color: #8839ef">class</span> <span style="color: #df8e1d">Adapter</span> <span style="color: #8839ef">implements</span> Target {<br>  <span style="color: #179299">Adaptee</span> adaptee<br><br>  T method(<span style="color: #179299">U</span> u) {<br>    <span style="color: #8839ef">return</span> <span style="color: #d20f39">transform</span>(<span style="color: #1e66f5">adaptee</span>.<span style="color: #d20f39">wrapper</span>(<span style="color: #d20f39">transform</span>(<span style="color: #1e66f5">u</span>)));<br>  }<br>}<br><br><span style="color: #8839ef">class</span> <span style="color: #df8e1d">Adaptee</span> {<br>  <span style="color: #179299">V</span> <span style="color: #1e66f5">wrapper</span>(<span style="color: #179299">W</span> <span style="color: #d20f39">w</span>) { ... }<br>}</code></pre>
+  </body>
+</html>

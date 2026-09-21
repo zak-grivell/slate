@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>SPI</h2>
+    <p>Serial Peripheral Interface is</p>
+    <ul>
+      <li>syncronous</li>
+      <li>master slave</li>
+      <li>half-duplex</li>
+    </ul>
+    <h3>Wiring</h3>
+    <p>3 main ports</p>
+    <ul>
+      <li>SCLK - shared clock</li>
+      <li>MOSI - master out slave in</li>
+      <li>MISO - master in slave out</li>
+    </ul>
+    <p>To allow the master to talk to more than one device can have a SS line to select which slave is being talked to</p>
+    <h3>Timings</h3>
+    <p>Master initates transfer by driving the <code>SCLK</code> and then data is send one clock rise and read on the clock down clock frequency it’s up to specific implementations SPI just specifies the wires rather than the whole communication standard it essentially is just the physical layer</p>
+    <h3>Advantages and Disadvantages</h3>
+    <ul>
+      <li>Very fast as no overhead for stop and start bits and can putout a coninuous stream of data</li>
+      <li>Have to have a chip select line for every device</li>
+      <li>No hardware flow control - cannot know if message was recived</li>
+      <li>No clocks needed on slaves</li>
+    </ul>
+  </body>
+</html>

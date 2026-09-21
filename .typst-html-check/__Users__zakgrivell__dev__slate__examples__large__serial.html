@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>Serial Communication</h2>
+    <p>Way of device communicating with others</p>
+    <ul>
+      <li><a href="./uart.typ">Uart</a></li>
+      <li><a href="./spi.typ">Spi</a></li>
+      <li><a href="./i2c.typ">I2c</a></li>
+    </ul>
+    <h3>Asyncronous vs Syncronous</h3>
+    <p>Asyncronous does not share a clock line reducing the number of wires but then requires the communication rate to be the same</p>
+    <h3>Peer to Peer vs Master to Slave</h3>
+    <p>Peer to peer requires no set relationship between devices this generall means is one to one at a time compared to master slave which can share wires and one is in charge of all</p>
+    <h3>Types</h3>
+    <ul>
+      <li>Simplex - One way only</li>
+      <li>Half Duplex - Both ways but not same time</li>
+      <li>Full Duplex - Both ways at same time</li>
+    </ul>
+    <h3>Timings</h3>
+    <p>To syncronise generall have a start ‘bit’ or ‘condiditon’</p>
+  </body>
+</html>

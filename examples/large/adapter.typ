@@ -5,6 +5,8 @@
 = Adapter Pattern
 Used to allow two systems to interface with each other despite different interfaces.
 
+#import fletcher:*
+
 #diagram(
   spacing: (50mm, 20mm),
   node-stroke: luma(80%),

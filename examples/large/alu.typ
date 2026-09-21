@@ -69,7 +69,5 @@ The Von Neuman Scheme has the ALU output the adress it is writing to in memory s
 
 This gives the diagram
 
-#image("assets/Screenshot 2026-05-10 at 16.01.03.png")
-
 #flashcard("Describe the basic ALU, memory circuit", "#image(\"assets/Screenshot 2026-05-10 at 16.01.03.png\")")
 

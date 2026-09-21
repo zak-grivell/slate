@@ -5,10 +5,10 @@ use dioxus::{
     prelude::*,
 };
 use futures::{SinkExt, StreamExt, stream::FuturesUnordered};
-use notify::{Event, RecursiveMode, Result, Watcher};
+use notify::{EventKind, RecursiveMode, Watcher};
 use slate_bridge::TypstBridge;
-use slate_shared::{ClientEvent, RoutePath, ServerEvent, TypstFileMetaData};
-use std::path::PathBuf;
+use slate_shared::{ClientEvent, ServerEvent, TypstFileMetaData, TypstFilePath};
+use std::{path::PathBuf, sync::Arc};
 use tokio::sync::{Mutex, mpsc};
 
 static TYPST_BRIDGE: Lazy<Mutex<TypstBridge>> = Lazy::new(async move || {
@@ -50,7 +50,7 @@ pub async fn files_stream() -> ServerFnResult<Streaming<TypstFileMetaData, JsonE
                 let links = result.metadata_query("link").unwrap_or_default();
 
                 Some(TypstFileMetaData {
-                    path: file.to_path_buf(),
+                    path: TypstFilePath(file.to_path_buf()),
                     tags,
                     links,
                 })
@@ -118,57 +118,72 @@ pub async fn render(path: PathBuf) -> ServerFnResult<String> {
 }
 
 pub async fn file_watcher(
-    path: RoutePath,
+    path: TypstFilePath,
     options: WebSocketOptions,
 ) -> ServerFnResult<Websocket<ClientEvent, ServerEvent, CborEncoding>> {
-    println!("ws recived");
-
     Ok(options.on_upgrade(move |socket| async move {
-        println!("ws updgraded");
-
-        let (tx, mut rx) = mpsc::channel::<Result<Event>>(5);
+        let (tx, mut rx) = mpsc::channel::<PathBuf>(5);
         let (mut sender, mut reciver) = socket.split();
 
-        let mut watcher = notify::recommended_watcher(move |res| {
-            let _ = tx.blocking_send(res);
+        let watcher_tx = tx.clone();
+
+        let mut watcher = notify::recommended_watcher(move |res: notify::Result<notify::Event>| {
+            let Ok(event) = res else { return };
+
+            let EventKind::Modify(notify::event::ModifyKind::Data(_)) = event.kind else {
+                return;
+            };
+
+            if let Some(path) = event.paths.first() {
+                watcher_tx.blocking_send(path.clone()).unwrap();
+            } else {
+                panic!("should have the paths")
+            }
         })
         .unwrap();
 
-        println!("started trying to send {:?}", path.clone());
-
         sender
-            .send(ServerEvent::FileUpdate(render(path.0.clone()).await))
+            .send(ServerEvent::FileUpdate(
+                render(path.as_local().to_path_buf()).await,
+            ))
             .await
             .unwrap();
 
+        watcher
+            .watch(path.as_local(), RecursiveMode::NonRecursive)
+            .unwrap();
+
+        let path = Arc::new(Mutex::new(path));
+        let last_path = path.clone();
+
         let worker = tokio::spawn(async move {
-            while let Some(Ok(event)) = rx.recv().await {
-                if let Some(path) = event.paths.first() {
-                    let _ = sender
-                        .send(ServerEvent::FileUpdate(render(path.clone()).await))
-                        .await;
-                }
+            while rx.recv().await.is_some() {
+                println!("change detected - re rendering");
+                sender
+                    .send(ServerEvent::FileUpdate(
+                        render(path.lock().await.as_local().to_path_buf()).await,
+                    ))
+                    .await
+                    .unwrap();
             }
         });
-
-        let mut last_path = path;
-
-        watcher
-            .watch(&last_path.0, RecursiveMode::NonRecursive)
-            .unwrap();
 
         while let Some(Ok(msg)) = reciver.next().await {
             match msg {
                 ClientEvent::FileMoved(p) => {
-                    watcher.unwatch(&last_path.0).unwrap();
+                    watcher.unwatch(last_path.lock().await.as_local()).unwrap();
+                    watcher
+                        .watch(p.as_local(), RecursiveMode::NonRecursive)
+                        .unwrap();
 
-                    watcher.watch(&p.0, RecursiveMode::NonRecursive).unwrap();
+                    let _ = tx.send(p.as_local().to_path_buf()).await;
 
-                    last_path = p;
+                    *last_path.lock().await = p;
                 }
             }
         }
 
         worker.abort();
+        drop(last_path)
     }))
 }

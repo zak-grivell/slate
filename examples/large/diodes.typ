@@ -5,7 +5,7 @@
 = Diodes
 Diodes are nonlinear IV components. The idea diode has an IV graph of $0A$ when $v<0$ but a vertical asymptote when $v>0$. They are used in many areas like #note("./rectifiers.typ") and #note("./voltage_doubler.typ")
 
-#align(center, cetz.canvas(length: 3cm, {
+#canvas(length: 3cm, {
   import cetz.draw: *
   set-style(stroke: white)
   set-style(fill: none)
@@ -28,7 +28,7 @@ Diodes are nonlinear IV components. The idea diode has an IV graph of $0A$ when 
   line((-1, 0), (0, 0), stroke: red)
 
   line((0, 0), (0, 1), stroke: red)
-}))
+})
 
 In one direction it acts like a short circuit whereas in the other it acts like an open loop.
 
@@ -40,7 +40,7 @@ In one direction it acts like a short circuit whereas in the other it acts like 
 A real diode is not like this. It has leakage current on its negative side, and does not perfectly conduct on the positive side and forms an exponential curve
 
 
-#align(center, cetz.canvas(length: 3cm, {
+#canvas(length: 3cm, {
   import cetz.draw: *
   set-style(stroke: white)
   set-style(fill: none)
@@ -77,12 +77,12 @@ A real diode is not like this. It has leakage current on its negative side, and 
 
     p = (x, y)
   }
-}))
+})
 
 
 A load line is a method of solving problems by overlaying the IV graphs of devices for example a resistor and diode create
 
-#align(center, cetz.canvas(length: 3cm, {
+#canvas(length: 3cm, {
   import cetz.draw: *
   set-style(stroke: white)
   set-style(fill: none)
@@ -139,7 +139,7 @@ A load line is a method of solving problems by overlaying the IV graphs of devic
       p = (x, y)
     }
   }
-}))
+})
 
 Therefore, the current & voltage over diode is the intersection between the two lines.
 
@@ -157,7 +157,7 @@ A real diode can be approximated with a resistor, supply and perfect diode
 
 This repersents the voltage drop over the diode as well as the non straight verical line of the diode in formward bias
 
-#align(center, cetz.canvas(length: 3cm, {
+#align(center, canvas(length: 3cm, {
   import cetz.draw: *
   set-style(stroke: white)
   set-style(fill: none)

@@ -57,7 +57,7 @@ pub fn Base16Theme() -> Element {
         .map(|v| get_colors_css(v.to_vec()));
 
     rsx! {
-        document::Stylesheet { href: asset!("/assets/tailwind.css") }
+        document::Stylesheet { href: "/assets/tailwind.css" }
 
         document::Style {
             {

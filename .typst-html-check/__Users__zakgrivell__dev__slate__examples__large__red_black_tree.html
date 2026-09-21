@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>Red Black Trees</h2>
+    <h3>Properties</h3>
+    <ul>
+      <li>Each node is red or black</li>
+      <li>Root node is black</li>
+      <li>The children of the red nodes are black</li>
+      <li>Leaf nodes are black</li>
+      <li>There should be the same number of black nodes from every leaf to the root</li>
+    </ul>
+    <h3>Insertion</h3>
+    <p>Always insert as red</p>
+    <ul>
+      <li>
+        <p>if inserting to root simply recolor and return</p>
+      </li>
+      <li>
+        <p>if not empty insert using <a href="./binary_search_tree.typ">Binary Search Tree</a> properties if parent is black all good!</p>
+      </li>
+      <li>
+        <p>otherwise, check the uncle; if it is black rotate, else recolor and repeat until the tree is valid</p>
+      </li>
+    </ul>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>Singleton Pattern</h2>
+    <p>Used to only have one instance of a class</p>
+    <p><span style="display: inline-block"></span></p>
+    <pre><code data-lang="java"><span style="color: #8839ef">class</span> <span style="color: #df8e1d">Singleton</span> {<br>  <span style="color: #8839ef">private</span> <span style="color: #8839ef">static</span> <span style="color: #179299">Singleton</span> singleton;<br><br>  <span style="color: #8839ef">private</span> <span style="color: #1e66f5">Singleton</span>() {}<br><br>  <span style="color: #8839ef">public</span> <span style="color: #8839ef">static</span> <span style="color: #179299">Singleton</span> <span style="color: #1e66f5">getInstance</span>() {<br>    <span style="color: #8839ef">if</span> (singleton == <span style="color: #fe640b">null</span>) {<br>      singleton = <span style="color: #8839ef">new</span> <span style="color: #179299">Singleton</span>();<br>    }<br><br>    <span style="color: #8839ef">return</span> singleton;<br>  }<br>}</code></pre>
+  </body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>Abstract Data Types</h2>
+    <p>A way to define the set of operations you can do without knowing the internals of a data structure.</p>
+    <h3>Stack</h3>
+    <p>Stores arbitrary elements; add to the top and remove from the top.</p>
+    <ul>
+      <li>Primary: push, pop</li>
+      <li>Secondary: peek, size, empty</li>
+    </ul>
+    <p>Can be implemented via:</p>
+    <ul>
+      <li>
+        <p>array can just add and remove from end and panic if overflow</p>
+      </li>
+      <li>
+        <p>vector can add or remove from end and extend if overflow</p>
+      </li>
+      <li>
+        <p>linked list can add and remove from the head in constant time</p>
+      </li>
+      <li>
+        <p>Push: add to top</p>
+      </li>
+      <li>
+        <p>Pop: remove from top</p>
+      </li>
+    </ul>
+    <p>“)</p>
+    <ul>
+      <li>Peek: get top element without removing it,</li>
+      <li>Size: number of elements in stack</li>
+      <li>Empty: does the stack have any elements</li>
+    </ul>
+    <p>“)</p>
+    <h3>Queue</h3>
+    <p>Stores arbitrary elements; add to the back and remove from the front.</p>
+    <ul>
+      <li>Primary: push, pop</li>
+      <li>Secondary: peek, size, empty</li>
+    </ul>
+    <p>Can be implemented via:</p>
+    <ul>
+      <li>
+        <p>array: Start and end pointer which wrap around</p>
+      </li>
+      <li>
+        <p>vector: Start and end pointer wrapping around and extending if required</p>
+      </li>
+      <li>
+        <p>linked list: Add at the tail and remove from the head</p>
+      </li>
+      <li>
+        <p>Push: add to back</p>
+      </li>
+      <li>
+        <p>Pop: remove from front</p>
+      </li>
+    </ul>
+    <p>“)</p>
+    <ul>
+      <li>Peek: get front element without removing it,</li>
+      <li>Size: number of elements in queue</li>
+      <li>Empty: does the queue have any elements</li>
+    </ul>
+    <p>“)</p>
+    <h3>Double Ended Queue</h3>
+    <p>Stores arbitrary elements; add to both sides and remove from both sides.</p>
+    <ul>
+      <li>Primary: push_front, push_back, pop_front, pop_back</li>
+    </ul>
+    <p>Can be implemented via an array, vector or linked list</p>
+    <h3>List</h3>
+    <p>An arbitrary sequence of elements</p>
+    <ul>
+      <li>Primary: get, set, add, remove</li>
+    </ul>
+  </body>
+</html>

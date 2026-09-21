@@ -8,7 +8,13 @@
 #metadata("UR MOM") <target>
 
 = Hello world
-This is a _test_ *doccument*
+
+i am live adding stuff
+
+
+
+This is a _test_ *doccument* 
+
 
 #note("./note.typ")
 

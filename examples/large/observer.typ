@@ -1,4 +1,5 @@
 #import "vault.typ":*
+#import fletcher:node, edge
 #show: setup
 #tag("oose")
 
@@ -9,15 +10,14 @@ Used to send updates from a subject to dependent observers, such as signals in w
   spacing: (50mm, 20mm),
   node-stroke: luma(80%),
   edge-stroke: luma(80%),
-  node((1, 0), [*Observer*], name: <o>, height: 2cm, width: 2cm),
-  node((-1, 0), [*Subject*], name: <s>, height: 2cm, width: 2cm),
-  node((-1, 1), [*Concrete Subject*], name: <cs>, height: 2cm, width: 2cm),
-  node((1, 1), [*Concrete Observer*], name: <co>, height: 2cm, width: 2cm),
-
-  edge(<co>, "-|>", <o>, label: [implements]),
-  edge(<cs>, "-|>", <s>, label: [implements]),
-  edge(<s>, "-|>", <o>, label: [notifyObservers], left, shift: 0.5cm),
-  edge(<cs>, "-|>", <o>, label: [observers: Observer[]], left),
+node((1, 0), [*Observer*], name: <o>, height: 2cm, width: 2cm),
+node((-1, 0), [*Subject*], name: <s>, height: 2cm, width: 2cm),
+node((-1, 1), [*Concrete Subject*], name: <cs>, height: 2cm, width: 2cm),
+node((1, 1), [*Concrete Observer*], name: <co>, height: 2cm, width: 2cm),
+edge(<co>, "-|>", <o>, label: [implements]),
+edge(<cs>, "-|>", <s>, label: [implements]),
+edge(<s>, "-|>", <o>, label: [notifyObservers], left, shift: 0.5cm),
+edge(<cs>, "-|>", <o>, label: [observers: Observer[]], left),
 )
 
 ```java

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>AVL Trees</h2>
+    <p>An AVL tree uses a more restrictive balancing scheme than <a href="./red_black_tree.typ">Red Black Tree</a>. They are slower for insertion and deletion but have faster lookup because they are more strictly balanced.</p>
+    <h3>Properties</h3>
+    <ul>
+      <li>Each node stores the difference in height between the right and left subtree</li>
+      <li>If <span style="display: inline-block"><svg class="typst-frame" style="overflow: visible; width: 2.9615555555555555em; height: 0.683em;" viewBox="0 0 32.57711111111111 7.513000000000001" width="32.57711111111111pt" height="7.513000000000001pt" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:h5="http://www.w3.org/1999/xhtml"><g><g class="typst-text" transform="matrix(1 0 0 -1 0 7.513000000000001)"><use xlink:href="#gA9215E295189FE7E4A4C5382028298E2" x="0" y="0" fill="#4c4f69" fill-rule="nonzero"/></g><g class="typst-text" transform="matrix(1 0 0 -1 3.0580000000000003 7.513000000000001)"><use xlink:href="#g2B250CA811574B2853ADA7EA0133CFBE" x="0" y="0" fill="#4c4f69" fill-rule="nonzero"/></g><g class="typst-text" transform="matrix(1 0 0 -1 9.35 7.513000000000001)"><use xlink:href="#gA9215E295189FE7E4A4C5382028298E2" x="0" y="0" fill="#4c4f69" fill-rule="nonzero"/></g><g class="typst-text" transform="matrix(1 0 0 -1 15.463555555555557 7.513000000000001)"><use xlink:href="#g9A87928278993555F98651CB81827FB9" x="0" y="0" fill="#4c4f69" fill-rule="nonzero"/></g><g class="typst-text" transform="matrix(1 0 0 -1 27.077111111111112 7.513000000000001)"><use xlink:href="#gB02BABF03B985EA206D6AC5B685C89C8" x="0" y="0" fill="#4c4f69" fill-rule="nonzero"/></g></g><defs id="glyph"><symbol id="gA9215E295189FE7E4A4C5382028298E2" overflow="visible"><path d="M 0 0m 1.529 -2.75 c 0.14299989 0 0.21999991 0.08800006 0.21999991 0.26399994 v 10.472 c 0 0.17599964 -0.07700002 0.26399994 -0.21999991 0.26399994 c -0.143 0 -0.22000003 -0.0880003 -0.22000003 -0.26399994 v -10.472 c 0 -0.17599988 0.07700002 -0.26399994 0.22000003 -0.26399994 Z "/></symbol><symbol id="g2B250CA811574B2853ADA7EA0133CFBE" overflow="visible"><path d="M 0 0m 5.797 4.103 c 0 0.50600004 -0.4949999 0.7589998 -1.0450001 0.7589998 c -0.47300005 0 -0.8469999 -0.25299978 -1.1329999 -0.7589998 c -0.23099995 0.50600004 -0.61599994 0.7589998 -1.177 0.7589998 c -0.5389999 0 -0.979 -0.25299978 -1.331 -0.74800014 c -0.29699993 -0.4289999 -0.45099998 -0.7479999 -0.45099998 -0.9569998 c 0 -0.09899998 0.055000007 -0.15400004 0.16500002 -0.15400004 c 0.09900004 0 0.16500002 0.055000067 0.18699998 0.15400004 c 0.20899999 0.638 0.671 1.3859997 1.4080001 1.3859997 c 0.36299992 0 0.5389998 -0.23099995 0.5389998 -0.6819997 c 0 -0.23100019 -0.19799995 -1.089 -0.58299994 -2.5630002 c -0.18700004 -0.737 -0.51699996 -1.1 -0.9899999 -1.1 c -0.15400004 0 -0.29700005 0.033000007 -0.41800004 0.088000014 c 0.28599995 0.109999985 0.42899996 0.30799997 0.42899996 0.594 c 0 0.286 -0.143 0.42900002 -0.43999994 0.42900002 c -0.36300004 0 -0.638 -0.30799997 -0.638 -0.671 c 0 -0.50600004 0.51699996 -0.759 1.056 -0.759 c 0.462 0 0.83599997 0.253 1.1329999 0.759 c 0.20900011 -0.50600004 0.605 -0.759 1.177 -0.759 c 0.5279999 0 0.96799994 0.253 1.3200002 0.74799997 c 0.29699993 0.42900002 0.45099974 0.748 0.45099974 0.957 c 0 0.09899998 -0.05499983 0.15400004 -0.16499996 0.15400004 c -0.09899998 0 -0.1539998 -0.055000067 -0.1869998 -0.15400004 c -0.18700027 -0.627 -0.68200016 -1.386 -1.3970001 -1.386 c -0.36300015 0 -0.54999995 0.21999998 -0.54999995 0.671 c 0 0.14299995 0.05499983 0.45099992 0.17599988 0.9459999 l 0.37400007 1.485 c 0.20899987 0.82500005 0.54999995 1.2429998 1.0340002 1.2429998 c 0.1539998 0 0.29699993 -0.032999992 0.41799974 -0.08799982 c -0.29699993 -0.09899998 -0.44000006 -0.29699993 -0.44000006 -0.59399986 c 0 -0.286 0.15400028 -0.42900014 0.4510002 -0.42900014 c 0.35199976 0 0.62699986 0.319 0.62699986 0.67100024 Z "/></symbol><symbol id="g9A87928278993555F98651CB81827FB9" overflow="visible"><path d="M 0 0m 7.546 2.497 c 0.11000013 0.055000067 0.16499996 0.13199997 0.16499996 0.25300002 c 0 0.12100005 -0.05499983 0.19799995 -0.16499996 0.25300002 l -6.314 2.9919999 c -0.032999992 0.011000156 -0.07700002 0.022000313 -0.12100005 0.022000313 c -0.17599994 0 -0.26399994 -0.0880003 -0.26399994 -0.2750001 c 0 -0.09899998 0.055000007 -0.17600012 0.15400004 -0.22000027 l 5.874 -2.7719998 l -5.874 -2.772 c -0.09900004 -0.044 -0.15400004 -0.12100001 -0.15400004 -0.22 c 0 -0.18699999 0.088 -0.27500004 0.26399994 -0.27500004 c 0.04400003 0 0.08800006 0.011000037 0.12100005 0.022000015 Z "/></symbol><symbol id="gB02BABF03B985EA206D6AC5B685C89C8" overflow="visible"><path d="M 0 0m 2.9589999 7.3259997 c -0.45099998 -0.4619999 -1.1109998 -0.69299984 -1.9799999 -0.69299984 v -0.4289999 c 0.572 0 1.045 0.08799982 1.4080001 0.26399994 v -5.566 c 0 -0.19800001 -0.04400015 -0.32999998 -0.14300013 -0.385 c -0.09899998 -0.055000007 -0.37399995 -0.08800003 -0.814 -0.08800003 h -0.385 v -0.429 c 0.27499998 0.022 0.8690001 0.033 1.782 0.033 c 0.9130001 0 1.5070002 -0.011 1.7820003 -0.033 v 0.429 h -0.38500023 c -0.45099998 0 -0.7260001 0.033000022 -0.8139999 0.08800003 c -0.08800006 0.055000007 -0.14300013 0.18699998 -0.14300013 0.385 v 6.094 c 0 0.26399994 -0.022000074 0.32999992 -0.3080001 0.32999992 Z "/></symbol></defs></svg></span> then perform rotations</li>
+    </ul>
+    <h3>Insertion</h3>
+    <ul>
+      <li>Insert as normal <a href="./binary_search_tree.typ">Binary Search Tree</a></li>
+      <li>
+        <p>Retrace from insertion updating the balance factor and rotating if needed</p>
+        <ul>
+          <li>If zero stop retracing</li>
+          <li>If +1 or −1 continue up</li>
+          <li>If +2 or −2 rotate and recompute</li>
+        </ul>
+      </li>
+      <li>
+        <p>Rotation conditions - in short if double opposite else the second</p>
+        <ul>
+          <li>LL was inserted on the left subtree of the left child - right rotate</li>
+          <li>RR was inserted on the right subtree of the right child - left rotate</li>
+          <li>LR was inserted on the right subtree of the left child - left rotate the left child, then right rotate</li>
+          <li>RL was inserted on the left subtree of the right child - right rotate the right child, then left rotate</li>
+        </ul>
+      </li>
+    </ul>
+  </body>
+</html>

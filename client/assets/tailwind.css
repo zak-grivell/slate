@@ -23,7 +23,6 @@
     --color-base04: var(--base04);
     --color-base05: var(--base05);
     --color-base07: var(--base07);
-    --color-base08: var(--base08);
   }
 }
 @layer base {
@@ -657,9 +656,6 @@
   .overflow-y-auto {
     overflow-y: auto;
   }
-  .rounded {
-    border-radius: 0.25rem;
-  }
   .rounded-md {
     border-radius: var(--radius-md);
   }
@@ -683,20 +679,17 @@
   .border-base03 {
     border-color: var(--color-base03);
   }
-  .border-base08 {
-    border-color: var(--color-base08);
-  }
   .bg-base00 {
     background-color: var(--color-base00);
   }
   .bg-base01 {
     background-color: var(--color-base01);
   }
+  .bg-base02 {
+    background-color: var(--color-base02);
+  }
   .p-0 {
     padding: calc(var(--spacing) * 0);
-  }
-  .p-4 {
-    padding: calc(var(--spacing) * 4);
   }
   .px-2 {
     padding-inline: calc(var(--spacing) * 2);
@@ -713,9 +706,6 @@
   .py-3 {
     padding-block: calc(var(--spacing) * 3);
   }
-  .py-12 {
-    padding-block: calc(var(--spacing) * 12);
-  }
   .text-sm {
     font-size: var(--text-sm);
     line-height: var(--tw-leading, var(--text-sm--line-height));
@@ -727,8 +717,8 @@
   .text-base05 {
     color: var(--color-base05);
   }
-  .text-base08 {
-    color: var(--color-base08);
+  .text-base07 {
+    color: var(--color-base07);
   }
   .placeholder-base04 {
     &::placeholder {

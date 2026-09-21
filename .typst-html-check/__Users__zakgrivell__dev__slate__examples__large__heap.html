@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>Heaps</h2>
+    <p>Heaps are a form of <a href="./trees.typ">Trees</a>, specifically a binary tree. There are two forms: maximum and minimum. They guarantee less order than a <a href="./binary_search_tree.typ">Binary Search Tree</a>: they only say that a node’s children are larger than it in the minimum case and smaller in the maximum case.</p>
+    <h3>Operations</h3>
+    <p>Insert as a leaf of the tree, then swap upward until the heap property is restored.</p>
+    <p>Replace the element to be deleted with the last element in the heap then <code>heapify</code> downwards to ensure valid properties</p>
+    <p>Heapify is simply taking an element comparing it to the children then swapping where necessary</p>
+  </body>
+</html>

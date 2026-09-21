@@ -23,7 +23,7 @@ Combination of an RC charging circuit and a #note("./schmitt_trigger.typ")
 
 The RC charging circuit cause a delay to the switching states of the #note("./schmitt_trigger.typ") meaning it creates a square wave. The point in which it switches is when the voltage over the capacitor is $beta V_s$
 
-#cetz.canvas(length: 3cm, {
+#canvas(length: 3cm, {
   import cetz.draw: *
 
   line((0, 0), (5, 0), mark: (end: "stealth"))

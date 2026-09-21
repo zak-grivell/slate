@@ -9,12 +9,12 @@ Pattern where a client class holds on to a `Behaviour` interface which it can ca
     spacing: (18mm, 10mm),
     node-stroke: luma(80%),
     edge-stroke: luma(80%),
-    node((-1, 0), [*Client*], name: <c>, height: 2cm, width: 2cm),
-    node((2, 0), [*Behaviour*], name: <b>, height: 2cm, width: 2cm),
-    node((2, 1), [*Concrete Behaviour*], name: <cb>, height: 2cm, width: 2cm),
+    fletcher.node((-1, 0), [*Client*], name: <c>, height: 2cm, width: 2cm),
+    fletcher.node((2, 0), [*Behaviour*], name: <b>, height: 2cm, width: 2cm),
+    fletcher.node((2, 1), [*Concrete Behaviour*], name: <cb>, height: 2cm, width: 2cm),
 
-    edge(<c>, "-|>", <b>, label: [Behaviour behaviour]),
-    edge(<cb>, "--|>", <b>, label: [implements]),
+    fletcher.edge(<c>, "-|>", <b>, label: [Behaviour behaviour]),
+    fletcher.edge(<cb>, "--|>", <b>, label: [implements]),
 )
 
 ```java

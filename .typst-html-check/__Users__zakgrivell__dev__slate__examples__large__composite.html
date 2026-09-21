@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>Composite Pattern</h2>
+    <p>Used to represent a tree like structure in code</p>
+    <p><span style="display: inline-block"></span></p>
+    <pre><code data-lang="java"><span style="color: #8839ef">interface</span> <span style="color: #df8e1d">Node</span> {<br>  <span style="color: #179299">T</span> <span style="color: #1e66f5">method</span>();<br>  <span style="color: #179299">Node</span><span style="color: #8839ef">[]</span> <span style="color: #1e66f5">children</span>();<br>}<br><br><span style="color: #8839ef">class</span> <span style="color: #df8e1d">ConcreteNode</span> <span style="color: #8839ef">implements</span> Node {<br>  <span style="color: #179299">Node</span><span style="color: #8839ef">[]</span> children;<br><br>  <span style="color: #179299">T</span> <span style="color: #1e66f5">method</span>() { ... }<br>  <span style="color: #179299">Node</span><span style="color: #8839ef">[]</span> <span style="color: #1e66f5">children</span>() { <span style="color: #8839ef">return</span> children }<br>}<br><br><span style="color: #8839ef">class</span> <span style="color: #df8e1d">ConcreteNodeLeaf</span> <span style="color: #8839ef">implements</span> Node {<br>  <span style="color: #179299">T</span> <span style="color: #1e66f5">method</span>() { ... }<br>  <span style="color: #179299">Node</span><span style="color: #8839ef">[]</span> <span style="color: #1e66f5">children</span>() { <span style="color: #8839ef">return</span> <span style="color: #8839ef">new</span> []; }<br>}</code></pre>
+  </body>
+</html>

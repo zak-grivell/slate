@@ -27,9 +27,8 @@
 
           cargoHash = "sha256-DPdCDPTAPBrbqLUqnCwQu1dePs9lGg85JCJOCIr9qjU=";
         };
-      in {
-        packages.default = pkgs.rustPlatform.buildRustPackage {
-          pname = "rust-app";
+        slate = pkgs.rustPlatform.buildRustPackage {
+          pname = "slate";
           version = "0.1.0";
 
           src = ./.;
@@ -37,13 +36,66 @@
             lockFile = ./Cargo.lock;
           };
 
-          nativeBuildInputs = [pkgs.makeWrapper];
+          nativeBuildInputs =
+            [
+              pkgs.makeWrapper
+              pkgs.binaryen
+              pkgs.dioxus-cli
+              pkgs.lld
+              wasm-bindgen-cli-02121
+            ]
+            ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [pkgs.darwin.sigtool];
+
+          cargoBuildFlags = [
+            "-p"
+            "slate-cli"
+          ];
+
+          postBuild = ''
+            dx bundle \
+              --package slate-app \
+              --fullstack \
+              --release \
+              --codesign false \
+              --force-sequential true \
+              --out-dir target/slate-bundle \
+              --cargo-args="--offline"
+          '';
+
+          postInstall = ''
+            cp -R target/slate-bundle/public "$out/bin/public"
+            cp client/assets/tailwind.css "$out/bin/public/assets/tailwind.css"
+          '';
 
           postFixup = ''
             for bin in "$out"/bin/*; do
-              wrapProgram "$bin" --prefix PATH : ${pkgs.lib.makeBinPath [pkgs.tinymist]}
+              if [ -f "$bin" ] && [ -x "$bin" ]; then
+                wrapProgram "$bin" --prefix PATH : ${pkgs.lib.makeBinPath [pkgs.tinymist]}
+              fi
             done
           '';
+
+          meta = with pkgs.lib; {
+            description = "A Typst-native notes application";
+            mainProgram = "slate-cli";
+            platforms = platforms.unix;
+          };
+        };
+      in {
+        packages = {
+          default = slate;
+          inherit slate;
+        };
+
+        apps = {
+          default = {
+            type = "app";
+            program = "${slate}/bin/slate-cli";
+          };
+          slate = {
+            type = "app";
+            program = "${slate}/bin/slate-cli";
+          };
         };
 
         devShells.default = pkgs.mkShell {

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h2>This is the vault root</h2>
+    <ul>
+      <li>Configure your settings</li>
+      <li>Import librarys for global use</li>
+      <li>Shadow library functions for styling</li>
+    </ul>
+    <pre><code data-lang="typst"><span style="color: #d73948">#</span><span style="color: #d73948">let</span> canvas <span style="color: #d73948">=</span> <span style="color: #8b41b1">#</span><span style="color: #8b41b1">cetz</span>.<span style="color: #4b69c6">canvas</span>({<br>  <span style="color: #d73948">import</span> cetz.draw: <span style="color: #d73948">*</span><br><br>  <span style="color: #74747c">// Change the design for all elements after it</span><br>  <span style="color: #4b69c6">set-style</span>(<br>    <span style="color: #74747c">// Design of arrow tips at the end of lines</span><br>    mark: (fill: black, scale: <span style="color: #b60157">2</span>),<br>    <span style="color: #74747c">// Design of lines</span><br>    stroke: (thickness: <span style="color: #b60157">0.4pt</span>, cap: <span style="color: #198810">"round"</span>),<br>    <span style="color: #74747c">// Design of angles</span><br>    angle: (<br>      radius: <span style="color: #b60157">0.3</span>,<br>      label-radius: <span style="color: #b60157">.22</span>,<br>      fill: green.<span style="color: #4b69c6">lighten</span>(<span style="color: #b60157">80%</span>),<br>      stroke: (paint: green.<span style="color: #4b69c6">darken</span>(<span style="color: #b60157">50%</span>))<br>    ),<br>    <span style="color: #74747c">// Design of all text elements with an anchor</span><br>    content: (padding: <span style="color: #b60157">1pt</span>)<br>  )<br>})</code></pre>
+  </body>
+</html>
