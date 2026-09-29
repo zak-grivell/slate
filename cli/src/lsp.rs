@@ -164,6 +164,12 @@ fn message_document_path(message: &Value, root: &Path) -> Option<PathBuf> {
 }
 
 async fn notify_preview_focus(port: u16, path: &Path) -> io::Result<()> {
+    timeout(Duration::from_secs(5), send_preview_focus(port, path))
+        .await
+        .map_err(|_| io::Error::new(io::ErrorKind::TimedOut, "preview focus request timed out"))?
+}
+
+async fn send_preview_focus(port: u16, path: &Path) -> io::Result<()> {
     let body = serde_json::to_vec(&path.to_string_lossy()).map_err(io::Error::other)?;
     let mut stream = TcpStream::connect(("127.0.0.1", port)).await?;
     stream
@@ -176,7 +182,20 @@ async fn notify_preview_focus(port: u16, path: &Path) -> io::Result<()> {
         )
         .await?;
     stream.write_all(&body).await?;
-    stream.shutdown().await
+    // Keep the connection alive until Axum has handled the request. Dropping it
+    // immediately can cancel the handler before it publishes the focused file.
+    let mut reader = BufReader::new(stream);
+    let mut status = String::new();
+    reader.read_line(&mut status).await?;
+    let code = status
+        .split_whitespace()
+        .nth(1)
+        .and_then(|code| code.parse::<u16>().ok())
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "missing preview HTTP status"))?;
+    if !(200..300).contains(&code) {
+        return Err(io::Error::other(format!("preview rejected focus: {}", status.trim())));
+    }
+    Ok(())
 }
 
 async fn read_messages<R: AsyncRead + Unpin>(
@@ -423,6 +442,52 @@ fn offset_position(text: &str, offset: usize) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn focus_request_waits_for_server_acknowledgement() {
+        let listener = tokio::net::TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let server = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut reader = BufReader::new(stream);
+            let mut line = String::new();
+            reader.read_line(&mut line).await.unwrap();
+            assert_eq!(line, "POST /_slate/focus HTTP/1.1\r\n");
+            let mut length = 0;
+            loop {
+                line.clear();
+                reader.read_line(&mut line).await.unwrap();
+                if line == "\r\n" { break; }
+                if let Some(value) = line.strip_prefix("Content-Length:") {
+                    length = value.trim().parse::<usize>().unwrap();
+                }
+            }
+            let mut body = vec![0; length];
+            reader.read_exact(&mut body).await.unwrap();
+            assert_eq!(serde_json::from_slice::<String>(&body).unwrap(), "sub/current.typ");
+            // The client must still be connected and waiting, rather than
+            // shutting down its write side as soon as it sends the body.
+            let mut byte = [0];
+            assert!(timeout(Duration::from_millis(50), reader.read(&mut byte)).await.is_err());
+            reader.get_mut().write_all(b"HTTP/1.1 204 No Content\r\nContent-Length: 0\r\n\r\n").await.unwrap();
+        });
+        notify_preview_focus(port, Path::new("sub/current.typ")).await.unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn focus_request_reports_http_failure() {
+        let listener = tokio::net::TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let server = tokio::spawn(async move {
+            let (mut stream, _) = listener.accept().await.unwrap();
+            let mut request = [0; 4096];
+            stream.read(&mut request).await.unwrap();
+            stream.write_all(b"HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n").await.unwrap();
+        });
+        assert!(notify_preview_focus(port, Path::new("current.typ")).await.is_err());
+        server.await.unwrap();
+    }
 
     #[test]
     fn finds_note_link_under_cursor() {
