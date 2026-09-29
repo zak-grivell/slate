@@ -79,7 +79,8 @@ pub async fn run(port: u16, open: bool) -> io::Result<()> {
 
                 if let Some(preview) = preview.as_mut()
                     && let Some(path) = message_document_path(&value, &preview.root)
-                    && preview.focused.as_ref() != Some(&path)
+                    && (preview.focused.as_ref() != Some(&path)
+                        || value.get("method").and_then(Value::as_str) == Some("textDocument/didSave"))
                 {
                     if let Err(err) = notify_preview_focus(preview.port, &path).await {
                         eprintln!("slate lsp: failed to focus preview: {err}");
@@ -137,13 +138,25 @@ async fn start_preview(root: &Path, port: u16, open: bool) -> io::Result<(Child,
 }
 
 fn message_document_path(message: &Value, root: &Path) -> Option<PathBuf> {
-    if message.get("method").and_then(Value::as_str) == Some("textDocument/didClose") {
-        return None;
-    }
-    let uri = message
-        .pointer("/params/textDocument/uri")
-        .and_then(Value::as_str)?;
-    let path = Url::parse(uri).ok()?.to_file_path().ok()?;
+    let method = message.get("method")?.as_str()?;
+    let path = if method == "workspace/executeCommand" {
+        if message.pointer("/params/command")?.as_str()? != "tinymist.focusMain" {
+            return None;
+        }
+        PathBuf::from(message.pointer("/params/arguments/0")?.as_str()?)
+    } else {
+        // Background scans of other buffers must not steal preview focus.
+        let foreground = matches!(
+            method,
+            "textDocument/didOpen" | "textDocument/didChange" | "textDocument/didSave"
+        ) || (method.starts_with("textDocument/")
+            && message.pointer("/params/position").is_some());
+        if !foreground {
+            return None;
+        }
+        let uri = message.pointer("/params/textDocument/uri")?.as_str()?;
+        Url::parse(uri).ok()?.to_file_path().ok()?
+    };
     if path.extension().and_then(|extension| extension.to_str()) != Some("typ") {
         return None;
     }
@@ -434,7 +447,7 @@ mod tests {
     #[test]
     fn finds_workspace_document_path() {
         let message = json!({
-            "method": "textDocument/documentColor",
+            "method": "textDocument/didSave",
             "params": {
                 "textDocument": {
                     "uri": "file:///notes/sub/example.typ"
@@ -459,6 +472,44 @@ mod tests {
             }
         });
 
+        assert_eq!(message_document_path(&message, Path::new("/notes")), None);
+    }
+
+    #[test]
+    fn follows_explicit_editor_focus() {
+        let message = json!({
+            "method": "workspace/executeCommand",
+            "params": {"command": "tinymist.focusMain", "arguments": ["/notes/sub/current.typ"]}
+        });
+        assert_eq!(
+            message_document_path(&message, Path::new("/notes")),
+            Some(PathBuf::from("sub/current.typ"))
+        );
+    }
+
+    #[test]
+    fn background_requests_do_not_steal_focus() {
+        for method in [
+            "textDocument/documentColor",
+            "textDocument/semanticTokens/full",
+            "textDocument/diagnostic",
+        ] {
+            let message = json!({"method": method, "params": {"textDocument": {"uri": "file:///notes/background.typ"}}});
+            assert_eq!(message_document_path(&message, Path::new("/notes")), None);
+        }
+    }
+
+    #[test]
+    fn follows_cursor_activity_and_rejects_outside_documents() {
+        let mut message = json!({"method": "textDocument/hover", "params": {
+            "textDocument": {"uri": "file:///notes/current.typ"},
+            "position": {"line": 0, "character": 0}
+        }});
+        assert_eq!(
+            message_document_path(&message, Path::new("/notes")),
+            Some(PathBuf::from("current.typ"))
+        );
+        message["params"]["textDocument"]["uri"] = json!("file:///elsewhere/current.typ");
         assert_eq!(message_document_path(&message, Path::new("/notes")), None);
     }
 }

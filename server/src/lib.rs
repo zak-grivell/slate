@@ -219,9 +219,9 @@ pub async fn file_watcher(
                         .watch(p.as_local(), RecursiveMode::NonRecursive)
                         .unwrap();
 
-                    let _ = tx.send(p.as_local().to_path_buf()).await;
-
+                    let changed_path = p.as_local().to_path_buf();
                     *last_path.lock().await = p;
+                    let _ = tx.send(changed_path).await;
                 }
             }
         }
