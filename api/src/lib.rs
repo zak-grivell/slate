@@ -20,9 +20,9 @@ pub async fn get_colors() -> ServerFnResult<Vec<String>> {
 //     slate_server::render(path).await
 // }
 
-#[get("/ws/*path")]
+#[get("/ws?path")]
 pub async fn file_watcher(
-    path: TypstFilePath,
+    path: Option<TypstFilePath>,
     options: WebSocketOptions,
 ) -> ServerFnResult<Websocket<ClientEvent, ServerEvent, CborEncoding>> {
     println!("file stuff");

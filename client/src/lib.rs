@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use dioxus::prelude::*;
 
 mod file_viewer;
@@ -9,6 +7,7 @@ mod route_path;
 mod theme;
 
 use file_viewer::FileViewer;
+use file_viewer::Follow;
 use messages::use_messenger;
 use slate_shared::TypstFilePath;
 
@@ -29,9 +28,9 @@ fn KeyboardShortcutManager(children: Element) -> Element {
 
 #[derive(Clone, Debug, PartialEq, Routable)]
 pub enum AppRoute {
-    #[redirect("/", || AppRoute::FileViewer {
-        path: TypstFilePath::from(PathBuf::from("vault.typ")),
-    })]
+    #[redirect("/", || AppRoute::Follow {})]
+    #[route("/follow")]
+    Follow {},
     #[route("/file/:..path")]
     FileViewer { path: TypstFilePath },
 }

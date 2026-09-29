@@ -48,7 +48,7 @@ fn use_files() -> Signal<Vec<SearchFile>> {
                     }
                 }
                 Err(err) => {
-                    panic!("failed to list files: {err}");
+                    eprintln!("failed to list files: {err}");
                 }
             }
         });
@@ -103,8 +103,9 @@ pub fn Picker() -> Element {
         Key::Escape => hidden.set(true),
         Key::Character(c) if c == "f" => {
             spawn(async move {
-                let input = input().unwrap();
-                input.set_focus(true).await.unwrap();
+                if let Some(input) = input() {
+                    let _ = input.set_focus(true).await;
+                }
             });
 
             hidden.set(false);
@@ -138,6 +139,9 @@ pub fn Picker() -> Element {
                     input.set(Some(event.data()));
                 },
                 onkeydown: move |e: Event<KeyboardData>| {
+                    if e.key() != Key::Escape {
+                        e.stop_propagation();
+                    }
                     match e.key() {
                         Key::Enter => {
                             let Some(selection) = matched_files().get(selected()).cloned() else {
@@ -152,11 +156,15 @@ pub fn Picker() -> Element {
                         }
                         Key::ArrowUp => {
                             let files = matched_files();
-                            selected.set(((selected() + files.len()) - 1) % files.len())
+                            if !files.is_empty() {
+                                selected.set((selected() + files.len() - 1) % files.len());
+                            }
                         }
                         Key::ArrowDown => {
                             let files = matched_files();
-                            selected.set((selected() + 1) % files.len())
+                            if !files.is_empty() {
+                                selected.set((selected() + 1) % files.len());
+                            }
                         }
                         _ => {}
                     }

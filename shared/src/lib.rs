@@ -87,4 +87,5 @@ pub enum ServerEvent {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum ClientEvent {
     FileMoved(TypstFilePath),
+    Follow,
 }

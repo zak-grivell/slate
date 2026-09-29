@@ -6,9 +6,8 @@ use slate_api::file_watcher;
 use slate_shared::{ClientEvent, ServerEvent, TypstFilePath};
 
 #[component]
-fn RenderedDoccument(path: TypstFilePath) -> Element {
+fn RenderedDoccument(path: Option<TypstFilePath>) -> Element {
     let initial_path = path.clone();
-    let navigator = use_navigator();
     let mut socket =
         use_websocket(move || file_watcher(initial_path.clone(), WebSocketOptions::new()));
 
@@ -17,7 +16,11 @@ fn RenderedDoccument(path: TypstFilePath) -> Element {
 
     use_effect(use_reactive((&path,), move |(path,)| {
         spawn(async move {
-            if let Err(err) = socket.send(ClientEvent::FileMoved(path)).await {
+            let event = match path {
+                Some(path) => ClientEvent::FileMoved(path),
+                None => ClientEvent::Follow,
+            };
+            if let Err(err) = socket.send(event).await {
                 eprintln!("failed to notify server of route change: {err}");
             }
         });
@@ -27,9 +30,7 @@ fn RenderedDoccument(path: TypstFilePath) -> Element {
         while let Ok(msg) = socket.recv().await {
             match msg {
                 ServerEvent::FileUpdate(res) => content.set(res),
-                ServerEvent::FileFocused(path) => {
-                    navigator.replace(crate::AppRoute::FileViewer { path });
-                }
+                ServerEvent::FileFocused(_) => {}
             }
         }
     });
@@ -51,6 +52,22 @@ fn RenderedDoccument(path: TypstFilePath) -> Element {
 
 #[component]
 pub fn FileViewer(path: TypstFilePath) -> Element {
+    rsx! { Viewer { path: Some(path) } }
+}
+
+#[component]
+pub fn Follow() -> Element {
+    rsx! { Viewer { path: None } }
+}
+
+#[component]
+fn Viewer(path: Option<TypstFilePath>) -> Element {
+    let nav = use_navigator();
+    crate::messages::use_receiver::<Event<KeyboardData>, _>(move |event| {
+        if event.key() == Key::Character("m".into()) {
+            nav.push(crate::AppRoute::Follow {});
+        }
+    });
     rsx! {
         Picker {}
         Base16Theme {}

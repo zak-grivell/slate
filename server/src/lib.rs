@@ -10,7 +10,7 @@ use slate_bridge::TypstBridge;
 use slate_shared::{ClientEvent, ServerEvent, TypstFileMetaData, TypstFilePath};
 use std::{
     path::PathBuf,
-    sync::{Arc, OnceLock},
+    sync::OnceLock,
 };
 use tokio::sync::{Mutex, mpsc, watch};
 
@@ -132,101 +132,67 @@ pub async fn render(path: PathBuf) -> ServerFnResult<String> {
 }
 
 pub async fn file_watcher(
-    path: TypstFilePath,
+    path: Option<TypstFilePath>,
     options: WebSocketOptions,
 ) -> ServerFnResult<Websocket<ClientEvent, ServerEvent, CborEncoding>> {
     Ok(options.on_upgrade(move |socket| async move {
         let (tx, mut rx) = mpsc::channel::<PathBuf>(5);
-        let (mut sender, mut reciver) = socket.split();
+        let (mut sender, mut receiver) = socket.split();
         let mut focus_rx = focused_file().subscribe();
-
-        let watcher_tx = tx.clone();
-
-        let mut watcher = notify::recommended_watcher(move |res: notify::Result<notify::Event>| {
-            let Ok(event) = res else { return };
-
-            let EventKind::Modify(notify::event::ModifyKind::Data(_)) = event.kind else {
-                return;
-            };
-
-            if let Some(path) = event.paths.first() {
-                watcher_tx.blocking_send(path.clone()).unwrap();
-            } else {
-                panic!("should have the paths")
+        let mut following = path.is_none();
+        let mut current = path.or_else(|| focus_rx.borrow_and_update().clone());
+        let mut watcher = match notify::recommended_watcher(move |res: notify::Result<notify::Event>| {
+            if let Ok(event) = res
+                && matches!(event.kind, EventKind::Modify(_) | EventKind::Create(_))
+                && let Some(path) = event.paths.first()
+            {
+                let _ = tx.try_send(path.clone());
             }
-        })
-        .unwrap();
-
-        if sender
-            .send(ServerEvent::FileUpdate(
-                render(path.as_local().to_path_buf()).await,
-            ))
-            .await
-            .is_err()
-        {
-            return;
-        }
-
-        if let Some(path) = focus_rx.borrow().clone() {
-            if sender.send(ServerEvent::FileFocused(path)).await.is_err() {
+        }) {
+            Ok(watcher) => watcher,
+            Err(err) => { eprintln!("failed to create file watcher: {err}"); return; }
+        };
+        loop {
+            if let Some(path) = &current {
+                if let Err(err) = watcher.watch(path.as_local(), RecursiveMode::NonRecursive) {
+                    eprintln!("failed to watch {}: {err}", path.display());
+                }
+                if sender.send(ServerEvent::FileUpdate(render(path.as_local().to_path_buf()).await)).await.is_err() {
+                    return;
+                }
+            } else if sender.send(ServerEvent::FileUpdate(Ok("<h2>Waiting for an editor document</h2>".into()))).await.is_err() {
                 return;
             }
-        }
-
-        watcher
-            .watch(path.as_local(), RecursiveMode::NonRecursive)
-            .unwrap();
-
-        let path = Arc::new(Mutex::new(path));
-        let last_path = path.clone();
-
-        let worker = tokio::spawn(async move {
-            loop {
+            let next = loop {
                 tokio::select! {
-                    changed_path = rx.recv() => {
-                        let Some(_) = changed_path else { break };
-                        println!("change detected - re rendering");
-                        if sender
-                            .send(ServerEvent::FileUpdate(
-                                render(path.lock().await.as_local().to_path_buf()).await,
-                            ))
-                            .await
-                            .is_err()
-                        {
-                            break;
+                    event = receiver.next() => {
+                        match event {
+                            Some(Ok(ClientEvent::FileMoved(path))) => {
+                                following = false;
+                                break Some(path);
+                            }
+                            Some(Ok(ClientEvent::Follow)) => {
+                                following = true;
+                                break focus_rx.borrow_and_update().clone();
+                            }
+                            _ => return,
                         }
                     }
                     changed = focus_rx.changed() => {
-                        if changed.is_err() {
-                            break;
-                        }
+                        if changed.is_err() { return; }
                         let focused = focus_rx.borrow_and_update().clone();
-                        if let Some(focused) = focused
-                            && sender.send(ServerEvent::FileFocused(focused)).await.is_err()
-                        {
-                            break;
-                        }
+                        if following { break focused; }
+                    }
+                    changed = rx.recv() => {
+                        if changed.is_none() { return; }
+                        break current.clone();
                     }
                 }
+            };
+            if let Some(path) = &current {
+                let _ = watcher.unwatch(path.as_local());
             }
-        });
-
-        while let Some(Ok(msg)) = reciver.next().await {
-            match msg {
-                ClientEvent::FileMoved(p) => {
-                    watcher.unwatch(last_path.lock().await.as_local()).unwrap();
-                    watcher
-                        .watch(p.as_local(), RecursiveMode::NonRecursive)
-                        .unwrap();
-
-                    let changed_path = p.as_local().to_path_buf();
-                    *last_path.lock().await = p;
-                    let _ = tx.send(changed_path).await;
-                }
-            }
+            current = next;
         }
-
-        worker.abort();
-        drop(last_path)
     }))
 }

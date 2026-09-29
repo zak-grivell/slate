@@ -80,6 +80,7 @@ async fn run_preview(
     parent_pid: Option<u32>,
     announce_port: bool,
 ) {
+    let follow = path.is_dir();
     let (root, initial_file) = preview_paths(&path);
     if let Err(err) = std::env::set_current_dir(&root) {
         eprintln!("slate preview: could not enter {}: {err}", root.display());
@@ -102,7 +103,11 @@ async fn run_preview(
         println!("{port}");
         let _ = std::io::stdout().flush();
     }
-    let url = preview_url(port, &initial_file);
+    let url = if follow {
+        format!("http://127.0.0.1:{port}/follow")
+    } else {
+        preview_url(port, &initial_file)
+    };
     eprintln!("Slate preview: {url}");
 
     if open {
